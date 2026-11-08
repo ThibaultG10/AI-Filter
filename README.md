@@ -95,9 +95,9 @@ docs         user guides, regex audit
 
 Design decisions are recorded in `DECISIONS.md` (in French); the original specification is `CADRAGE.md`.
 
-## Contributing
+## Contributing and security
 
-Contributions are welcome. Run `npm run check` before any proposal, and add at least 10 positive and 10 negative test cases for any new detector (the test suite enforces it). Detectors must follow the regex rules in `docs/REGEX-AUDIT.md`.
+See `CONTRIBUTING.md` for how to help (including how to report a missed or wrongly masked value with **fake data only**) and `SECURITY.md` to report a vulnerability privately. Contributions are welcome. Run `npm run check` before any proposal, and add at least 10 positive and 10 negative test cases for any new detector (the test suite enforces it). Detectors must follow the regex rules in `docs/REGEX-AUDIT.md`.
 
 ## License
 

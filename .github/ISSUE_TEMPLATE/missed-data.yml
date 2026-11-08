@@ -1,0 +1,36 @@
+name: Donnée non détectée / Missed data
+description: Une donnée sensible n'a pas été masquée. / A sensitive value was not masked.
+title: "[Non détecté] "
+labels: ["detection"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚠️ Utilisez UNIQUEMENT de fausses valeurs / Use FAKE values only
+        Ne collez jamais une vraie donnée (IBAN, téléphone, clé…). Remplacez-la par une valeur du même format.
+        *Never paste a real value. Replace it with a fake one in the same format.*
+  - type: input
+    id: kind
+    attributes:
+      label: Type de donnée / Kind of data
+      placeholder: "ex. IBAN allemand, téléphone belge, identifiant interne…"
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Exemple (fausse valeur, même format) / Example (fake value, same format)
+      description: Le texte exact collé dans l'outil, écrit comme dans votre cas réel.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Résultat attendu / Expected
+      placeholder: "Je m'attendais à ce que ce soit masqué en [IBAN_1]."
+  - type: input
+    id: version
+    attributes:
+      label: Navigateur et langue de l'interface / Browser and UI language
+      placeholder: "Firefox 130, FR"

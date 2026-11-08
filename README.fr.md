@@ -82,9 +82,9 @@ npm run demo -- "voir https://git.entreprise.local/x" --domain entreprise.local
 
 Le script `demo` affiche le texte nettoyé et la liste des éléments masqués.
 
-## Licence et contributions
+## Licence, contributions et sécurité
 
-Licence MIT (voir `LICENSE`). Les contributions sont bienvenues : lancez `npm run check` avant toute proposition, et ajoutez des tests positifs et négatifs pour tout nouveau détecteur.
+Licence MIT (voir `LICENSE`). Pour aider ou signaler une donnée non détectée (avec de **fausses valeurs uniquement**), voir `CONTRIBUTING.md` ; pour signaler une faille en privé, voir `SECURITY.md`. Un guide pour les testeurs est dans `docs/TESTER-GUIDE.md`. Les contributions sont bienvenues : lancez `npm run check` avant toute proposition, et ajoutez des tests positifs et négatifs pour tout nouveau détecteur.
 
 ## Structure
 

@@ -1,0 +1,19 @@
+name: Idée ou demande / Idea or request
+description: Un format à ajouter, une amélioration, une question. / A format to add, an improvement, a question.
+title: ""
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "Pas de vraies données personnelles dans ce message, merci. / No real personal data in this message, please."
+  - type: textarea
+    id: need
+    attributes:
+      label: Votre besoin / Your need
+      description: Quelle situation concrète voulez-vous couvrir ?
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: Ce que vous faites aujourd'hui / What you do today
