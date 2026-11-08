@@ -10,7 +10,7 @@ Outil d'anonymisation **100 % local** : il masque les données sensibles d'un te
 
 **Sans rien installer** : ouvrez `filtre-ia.html` (fichier unique fourni) dans votre navigateur. Il fonctionne hors ligne, depuis un simple double-clic. Voir `docs/GUIDE-UTILISATEUR.md` (français) ou `docs/USER-GUIDE.md` (anglais).
 
-**Depuis les sources** :
+**Depuis les sources** (Node 22.12 ou plus récent) :
 
 ```bash
 npm install

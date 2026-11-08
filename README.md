@@ -12,7 +12,7 @@ Nothing leaves your browser: no server, no network request, no telemetry. The bu
 
 **Nothing to install**: open `filtre-ia.html` (single file) in your browser. It works offline with a double-click. See `docs/USER-GUIDE.md`.
 
-**From source** (Node 22):
+**From source** (Node 22.12 or later):
 
 ```bash
 npm install

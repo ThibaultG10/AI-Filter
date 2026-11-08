@@ -44,7 +44,7 @@
 - **Recherche** : un `indexOf` par terme sur le texte normalisé (coût proportionnel au nombre de termes × longueur du texte). 1 000 termes sur 50 000 caractères restent sous 300 ms (vérifié par un test). Un Aho-Corasick serait l'étape suivante pour des annuaires de plusieurs dizaines de milliers de termes.
 - **`engine.ts`** : point d'entrée `analyze(texte, { detectors, directory })`, qui combine détecteurs et annuaire. L'interface (jalon 5) n'appellera que cette fonction.
 - **URL internes** : le chemin ne se termine plus par une ponctuation de fin de phrase (« …/phenix. » masque « …/phenix », le point reste).
-- **Script de démo** (`npm run demo`) : lancé par `vite-node`, déjà installé avec Vitest (aucune dépendance ajoutée). Les jetons y sont un simple aperçu ; la pseudonymisation réversible arrive au jalon 4.
+- **Script de démo** (`npm run demo`) : lancé par `vite-node` (puis `tsx` depuis le jalon 9). Les jetons y sont un simple aperçu ; la pseudonymisation réversible arrive au jalon 4.
 - **Tests** : 680 au total (détecteurs, validateurs, normalisation, annuaire, import/export, moteur, chevauchements, robustesse).
 
 ## Jalon 4 — Pseudonymisation réversible
@@ -90,3 +90,9 @@
 - **Nouveaux détecteurs** : `ssn` (séparateurs obligatoires, règles de zone/groupe/série), `nino` (lettres de préfixe valides, suffixe A-D, majuscules uniquement), `phone-us` (plan NANP ; « 1 » nu exigeant un séparateur, pour ne pas lire « 1234 555 2671 » comme un numéro), `phone-uk` (formats nationaux 07…, 02x, 011x/01x1, 01xxx, 03/08 ; les formats +44 restent couverts par `phone-intl`). Non faits : EIN, passeport, codes postaux (faux positifs élevés pour une valeur sensible faible).
 - **Faux jetons Slack dans les tests** : construits par concaténation à l'exécution, car la protection des dépôts GitHub bloque tout littéral ayant la forme d'un jeton.
 - **Documentation** : `README.md` en anglais (référence sur GitHub), `README.fr.md`, `docs/USER-GUIDE.md` et `docs/GUIDE-UTILISATEUR.md`.
+
+## Jalon 9 — Dépendances de développement
+
+- Un `npm audit` signalait 7 vulnérabilités, **toutes dans des outils de développement** (vitest, vite/esbuild, happy-dom, tinypool) : aucune n'est embarquée dans la page publiée (le fichier unique ne contient que notre code). Elles concernaient le serveur de développement et les tests, pas les utilisateurs.
+- Correctif : vitest 5, vite 8, happy-dom 21 → `npm audit` : 0 vulnérabilité. Conséquence : **Node ≥ 22.12 requis** (`engines`). `vite-node` n'existant plus avec vitest 5, les scripts (`demo`, `build:single`, `e2e`) passent par `tsx`. `vite.config.ts` importe `defineConfig` depuis `vitest/config`.
+- Sous Node 18 (sans cette mise à jour), WebCrypto n'est pas global : `tests/setup.ts` le branche pour les tests. Les navigateurs ne sont pas concernés.

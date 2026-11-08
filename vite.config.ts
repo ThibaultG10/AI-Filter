@@ -1,4 +1,5 @@
-import { defineConfig, type Plugin } from 'vite';
+import type { Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 // CSP stricte injectée uniquement au build : en dev, Vite a besoin de scripts
 // inline pour le rechargement à chaud, qu'une CSP stricte bloquerait.
@@ -32,5 +33,6 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',
+    setupFiles: ['tests/setup.ts'],
   },
 });
