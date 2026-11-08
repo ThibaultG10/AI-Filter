@@ -1,0 +1,26 @@
+{
+  "name": "filtre-ia",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Anonymisation locale de prompts avant envoi à une IA",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "build:single": "npm run build && vite-node scripts/build-single.ts",
+    "e2e": "vite-node scripts/e2e.ts",
+    "demo": "vite-node scripts/demo.ts",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "check": "npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "happy-dom": "^15.11.7",
+    "playwright-core": "^1.65.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

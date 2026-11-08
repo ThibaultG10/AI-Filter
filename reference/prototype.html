@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Filtre IA</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--tx:#1d1d1b;--mut:#6b6b66;--bd:#e2e2dc;--ac:#2f5d50;--hl:#ffe08a}
+@media(prefers-color-scheme:dark){:root{--bg:#161615;--card:#212120;--tx:#eeeeea;--mut:#9a9a94;--bd:#38382f;--ac:#7fbfa9;--hl:#6b5a1c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,sans-serif;padding:16px;max-width:760px;margin:auto}
+h1{font-size:1.3rem;margin:.2em 0}
+p.sub{color:var(--mut);margin:0 0 16px;font-size:.9rem}
+section{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+h2{font-size:1rem;margin:0 0 8px}
+textarea,input,select{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px}
+textarea{min-height:130px;resize:vertical}
+button{font:inherit;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+button.sec{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.row>*{flex:1 1 auto;width:auto}
+.preview{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;min-height:60px}
+mark{background:var(--hl);color:inherit;border-radius:4px;padding:0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:.85rem;display:flex;gap:6px;align-items:center}
+.chip b{cursor:pointer;color:var(--mut)}
+.stat{font-size:.85rem;color:var(--mut);margin-top:6px}
+label.t{display:flex;gap:6px;align-items:center;font-size:.9rem;margin:2px 0}
+label.t input{width:auto}
+</style>
+</head>
+<body>
+<h1>🛡️ Filtre IA</h1>
+<p class="sub">Tout reste dans ton navigateur : rien n'est envoyé nulle part. Réduit le risque, ne le supprime pas : relis toujours avant d'envoyer.</p>
+
+<section>
+<h2>1. Ton prompt</h2>
+<textarea id="in" placeholder="Colle ici le texte que tu comptes envoyer à une IA…"></textarea>
+<div class="row"><button id="go">Nettoyer</button><button class="sec" id="clr">Vider</button></div>
+</section>
+
+<section>
+<h2>2. Texte nettoyé (aperçu)</h2>
+<div id="out" class="preview">—</div>
+<div class="stat" id="stat"></div>
+<div class="row"><button id="copy">Copier le texte nettoyé</button></div>
+</section>
+
+<section>
+<h2>3. Réponse de l'IA → remettre les vraies données</h2>
+<textarea id="resp" placeholder="Colle la réponse de l'IA ici…"></textarea>
+<div class="row"><button id="restore">Restaurer</button><button class="sec" id="copy2">Copier le résultat</button></div>
+<div id="restored" class="preview" style="margin-top:8px">—</div>
+</section>
+
+<section>
+<h2>Détecteurs automatiques</h2>
+<div id="dets"></div>
+</section>
+
+<section>
+<h2>Annuaire des termes interdits</h2>
+<p class="sub" style="margin-bottom:8px">Noms de clients, projets, serveurs, personnes… (sauvegardé dans ce navigateur)</p>
+<div class="row" style="margin-top:0">
+<input id="term" placeholder="Terme (ex : Dupont SA)">
+<select id="cat" style="max-width:150px"><option>CLIENT</option><option>PERSONNE</option><option>PROJET</option><option>SERVEUR</option><option>INTERNE</option></select>
+<button id="add" style="flex:0 0 auto">Ajouter</button>
+</div>
+<div class="chips" id="chips"></div>
+</section>
+
+<script>
+const $=id=>document.getElementById(id);
+const DETS=[
+ {k:'CLE_API',n:'Clés API / tokens',re:/\b(?:sk-[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,})\b/g},
+ {k:'EMAIL',n:'E-mails',re:/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g},
+ {k:'IBAN',n:'IBAN',re:/\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b/g},
+ {k:'SECU',n:'N° de sécurité sociale',re:/\b[12] ?\d{2} ?(?:0[1-9]|1[0-2]) ?(?:\d{2}|2[AB]) ?\d{3} ?\d{3}(?: ?\d{2})?\b/g},
+ {k:'CARTE',n:'Cartes bancaires',re:/\b(?:\d{4}[ -]?){3}\d{4}\b/g},
+ {k:'SIRET',n:'SIRET / SIREN',re:/\b\d{3} ?\d{3} ?\d{3}(?: ?\d{5})?\b/g},
+ {k:'IP',n:'Adresses IP',re:/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g},
+ {k:'TEL',n:'Téléphones',re:/(?:(?:\+|00)33[\s.]?|0)[1-9](?:[\s.-]?\d{2}){4}\b/g}
+];
+let state={on:Object.fromEntries(DETS.map(d=>[d.k,true])),terms:[]};
+try{const s=JSON.parse(localStorage.getItem('filtre-ia'));if(s){state.on={...state.on,...s.on};state.terms=s.terms||[]}}catch(e){}
+const save=()=>{try{localStorage.setItem('filtre-ia',JSON.stringify(state))}catch(e){}};
+let map={}; // token -> original
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const html=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function renderUI(){
+ $('dets').innerHTML=DETS.map(d=>`<label class="t"><input type="checkbox" data-k="${d.k}" ${state.on[d.k]?'checked':''}> ${d.n}</label>`).join('');
+ $('dets').querySelectorAll('input').forEach(i=>i.onchange=()=>{state.on[i.dataset.k]=i.checked;save()});
+ $('chips').innerHTML=state.terms.map((t,i)=>`<span class="chip">${html(t.v)} <small>· ${t.c}</small><b data-i="${i}">✕</b></span>`).join('')||'<span class="stat">Aucun terme pour l\'instant.</span>';
+ $('chips').querySelectorAll('b').forEach(b=>b.onclick=()=>{state.terms.splice(+b.dataset.i,1);save();renderUI()});
+}
+
+function clean(){
+ const text=$('in').value; const found=[];
+ for(const d of DETS){ if(!state.on[d.k])continue; for(const m of text.matchAll(d.re)) found.push({s:m.index,e:m.index+m[0].length,v:m[0],k:d.k}); }
+ for(const t of state.terms){ if(!t.v.trim())continue;
+  const re=new RegExp('(?<![\\p{L}\\p{N}])'+esc(t.v.trim())+'(?![\\p{L}\\p{N}])','giu');
+  for(const m of text.matchAll(re)) found.push({s:m.index,e:m.index+m[0].length,v:m[0],k:t.c}); }
+ found.sort((a,b)=>a.s-b.s||(b.e-b.s)-(a.e-a.s));
+ const kept=[];let last=-1;
+ for(const f of found){ if(f.s>=last){kept.push(f);last=f.e} }
+ map={};const idx={};const seen={};let outHtml='',outTxt='',pos=0;
+ for(const f of kept){
+  const key=f.k+'|'+f.v.toLowerCase();
+  if(!seen[key]){idx[f.k]=(idx[f.k]||0)+1;seen[key]='['+f.k+'_'+idx[f.k]+']';map[seen[key]]=f.v}
+  const tok=seen[key];
+  outTxt+=text.slice(pos,f.s)+tok; outHtml+=html(text.slice(pos,f.s))+'<mark>'+tok+'</mark>'; pos=f.e;
+ }
+ outTxt+=text.slice(pos); outHtml+=html(text.slice(pos));
+ $('out').innerHTML=outHtml||'—'; $('out').dataset.txt=outTxt;
+ $('stat').textContent=kept.length?`${kept.length} élément(s) masqué(s), ${Object.keys(map).length} jeton(s) distinct(s).`:'Rien de sensible détecté (reste vigilant).';
+}
+async function copy(t,btn){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}const o=btn.textContent;btn.textContent='Copié ✓';setTimeout(()=>btn.textContent=o,1200)}
+function restore(){
+ let r=$('resp').value;
+ for(const [tok,v] of Object.entries(map)) r=r.split(tok).join(v);
+ $('restored').textContent=r||'—';
+}
+$('go').onclick=clean;
+$('clr').onclick=()=>{$('in').value='';$('resp').value='';$('out').textContent='—';$('restored').textContent='—';$('stat').textContent='';map={}};
+$('copy').onclick=e=>copy($('out').dataset.txt||'',e.target);
+$('restore').onclick=restore;
+$('copy2').onclick=e=>copy($('restored').textContent,e.target);
+$('add').onclick=()=>{const v=$('term').value.trim();if(!v)return;state.terms.push({v,c:$('cat').value});$('term').value='';save();renderUI()};
+$('term').addEventListener('keydown',e=>{if(e.key==='Enter')$('add').click()});
+renderUI();
+</script>
+</body>
+</html>
