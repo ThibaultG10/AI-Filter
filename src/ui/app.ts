@@ -1,8 +1,7 @@
-import { DEFAULT_CATEGORIES } from '../core/directory';
 import { createDetectors } from '../core/detectors';
 import { decryptSession, encryptSession, MIN_PASSPHRASE_LENGTH } from '../core/session-crypto';
 import { TokenSession } from '../core/pseudonymize';
-import { BANNER_TEXT, TEXTS as T } from '../config/texts';
+import { detectLanguage, getTexts, LANGS, type Lang } from '../config/texts';
 import { clear, copyText, downloadText, h } from './dom';
 import { AppModel, type ReviewItem } from './model';
 import { Storage } from './storage';
@@ -10,22 +9,39 @@ import { Storage } from './storage';
 const MAX_LISTED_ENTRIES = 200;
 const MAX_LISTED_ERRORS = 10;
 
+interface Snapshot {
+  input: string;
+  reply: string;
+  restored: string;
+  cleaned: string;
+}
+
 export interface MountOptions {
   storage?: Storage;
   /** Itérations PBKDF2 (réduit en test). */
   iterations?: number;
+  /** Langue forcée (sinon : choix mémorisé, puis langue du navigateur). */
+  lang?: Lang;
+  /** Modèle existant (changement de langue : on garde l'état). */
+  model?: AppModel;
+  snapshot?: Snapshot;
 }
 
 export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
   const storage = options.storage ?? new Storage();
-  const model = new AppModel(storage.loadSettings(), storage.loadDirectory());
+  const lang: Lang =
+    options.lang ?? storage.loadLang() ?? detectLanguage(typeof navigator === 'undefined' ? undefined : navigator.languages);
+  const T = getTexts(lang);
+  document.documentElement.lang = lang;
+  const model = options.model ?? new AppModel(storage.loadSettings(), storage.loadDirectory());
+  model.categoryMap = T.categories;
 
   // --- Éléments --------------------------------------------------------------
   const input = h('textarea', { id: 'input', rows: '8', spellcheck: 'false', autocomplete: 'off' });
   const inputStatus = h('p', { id: 'input-status', class: 'status', role: 'status' });
   const analyzeBtn = h('button', { id: 'analyze', type: 'button', class: 'primary', text: T.analyze });
-  const categoryInput = h('input', { id: 'mask-category', list: 'categories', value: 'INTERNE', 'aria-label': T.categoryLabel });
-  const categoryList = h('datalist', { id: 'categories' }, ...DEFAULT_CATEGORIES.map((c) => h('option', { value: c })));
+  const categoryInput = h('input', { id: 'mask-category', list: 'categories', value: T.defaultCategories[4] ?? 'INTERNAL', 'aria-label': T.categoryLabel });
+  const categoryList = h('datalist', { id: 'categories' }, ...T.defaultCategories.map((c) => h('option', { value: c })));
   const permanent = h('input', { id: 'mask-permanent', type: 'checkbox' });
   const maskBtn = h('button', { id: 'mask-selection', type: 'button', text: T.maskSelection });
 
@@ -82,7 +98,8 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
 
   function markButton(item: ReviewItem, index: number): HTMLElement {
     const { match } = item;
-    const label = item.masked ? T.markMasked(match.value, match.category) : T.markUnmasked(match.value, match.category);
+    const shown = model.display(match.category);
+    const label = item.masked ? T.markMasked(match.value, shown) : T.markUnmasked(match.value, shown);
     const btn = h(
       'button',
       {
@@ -93,7 +110,7 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
         title: label,
       },
       match.value,
-      h('span', { class: 'cat', 'aria-hidden': 'true', text: match.category }),
+      h('span', { class: 'cat', 'aria-hidden': 'true', text: shown }),
     );
     btn.addEventListener('click', () => {
       model.toggleValue(item.key);
@@ -120,7 +137,7 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
       setStatus(inputStatus, T.noSelection, true);
       return;
     }
-    const result = model.addTerm(selected, categoryInput.value || 'INTERNE', permanent.checked);
+    const result = model.addTerm(selected, categoryInput.value || (T.defaultCategories[4] ?? 'INTERNAL'), permanent.checked);
     if (!result.ok) {
       setStatus(inputStatus, result.error, true);
       return;
@@ -178,7 +195,7 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
         model.settings.enabled[d.id] = box.checked;
         storage.saveSettings(model.settings);
       });
-      detectorList.append(h('li', {}, box, h('label', { for: `det-${d.id}`, text: ` ${d.label}` })));
+      detectorList.append(h('li', {}, box, h('label', { for: `det-${d.id}`, text: ` ${T.detectorLabels[d.id] ?? d.label}` })));
     }
   }
   domainsInput.addEventListener('change', () => {
@@ -194,7 +211,7 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
 
   // --- Annuaire --------------------------------------------------------------
   const dirTerm = h('input', { id: 'dir-term', autocomplete: 'off' });
-  const dirCategory = h('input', { id: 'dir-category', list: 'categories', value: 'CLIENT' });
+  const dirCategory = h('input', { id: 'dir-category', list: 'categories', value: T.defaultCategories[0] ?? 'CLIENT' });
   const dirAliases = h('input', { id: 'dir-aliases', autocomplete: 'off', placeholder: 'variante 1 | variante 2' });
   const dirStatus = h('p', { id: 'dir-status', class: 'status', role: 'status' });
   const dirList = h('ul', { id: 'dir-list', class: 'plain dir' });
@@ -310,6 +327,21 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
     setStatus(sessionStatus, T.wiped);
   });
 
+  // --- Langue -----------------------------------------------------------------
+  const langSelect = h('select', { id: 'lang', 'aria-label': T.lang });
+  for (const l of LANGS) {
+    const opt = h('option', { value: l, text: l.toUpperCase() });
+    if (l === lang) opt.selected = true;
+    langSelect.append(opt);
+  }
+  langSelect.addEventListener('change', () => {
+    const next = langSelect.value as Lang;
+    storage.saveLang(next);
+    const snapshot: Snapshot = { input: input.value, reply: reply.value, restored: restored.value, cleaned: cleaned.value };
+    clear(root);
+    mount(root, { ...options, storage, lang: next, model, snapshot });
+  });
+
   // --- Assemblage ------------------------------------------------------------
   const field = (id: string, label: string, control: HTMLElement) =>
     h('div', { class: 'field' }, h('label', { for: id, text: label }), control);
@@ -326,7 +358,12 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
   );
 
   root.append(
-    h('header', {}, h('h1', { text: T.title }), h('p', { class: 'banner', role: 'note', text: BANNER_TEXT })),
+    h(
+      'header',
+      {},
+      h('div', { class: 'topbar' }, h('h1', { text: T.title }), langSelect),
+      h('p', { class: 'banner', role: 'note', text: T.banner }),
+    ),
     h(
       'main',
       {},
@@ -399,5 +436,19 @@ export function mount(root: HTMLElement, options: MountOptions = {}): AppModel {
   renderDetectors();
   renderDirectory();
   refreshSessionInfo();
+
+  const snap = options.snapshot;
+  if (snap) {
+    input.value = snap.input;
+    reply.value = snap.reply;
+    restored.value = snap.restored;
+    cleaned.value = snap.cleaned;
+    copyRestoredBtn.disabled = snap.restored === '';
+    copyCleanedBtn.disabled = snap.cleaned === '';
+    if (model.analyzedText !== null) {
+      reviewSection.hidden = false;
+      renderReview();
+    }
+  }
   return model;
 }

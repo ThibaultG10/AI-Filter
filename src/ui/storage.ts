@@ -2,11 +2,13 @@
 
 import type { DirectoryEntry } from '../core/directory';
 import { importJson, exportJson } from '../core/directory-io';
+import type { Lang } from '../config/texts';
 import { DEFAULT_SETTINGS, type Settings } from './model';
 
 const KEY_SETTINGS = 'filtre-ia/settings/v1';
 const KEY_DIRECTORY = 'filtre-ia/directory/v1';
 const KEY_SESSION = 'filtre-ia/session/v1';
+const KEY_LANG = 'filtre-ia/lang/v1';
 
 export interface KeyValueStore {
   getItem(key: string): string | null;
@@ -82,6 +84,15 @@ export class Storage {
     return this.write(KEY_DIRECTORY, exportJson(entries));
   }
 
+  loadLang(): Lang | null {
+    const v = this.read(KEY_LANG);
+    return v === 'fr' || v === 'en' ? v : null;
+  }
+
+  saveLang(lang: Lang): void {
+    this.write(KEY_LANG, lang);
+  }
+
   loadEncryptedSession(): string | null {
     return this.read(KEY_SESSION);
   }
@@ -99,5 +110,6 @@ export class Storage {
     this.remove(KEY_SETTINGS);
     this.remove(KEY_DIRECTORY);
     this.remove(KEY_SESSION);
+    this.remove(KEY_LANG);
   }
 }

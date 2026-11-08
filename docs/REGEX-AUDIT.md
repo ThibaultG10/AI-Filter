@@ -15,7 +15,7 @@ Les textes analysés sont fournis par l'utilisateur : une regex à backtracking 
 
 | Fichier | Regex | Risque | Justification |
 |---|---|---|---|
-| `core/detectors.ts` | 17 détecteurs | Faible | Chacun suit les règles 1 à 5 ; 20 entrées adverses de 50 000 caractères testées (< 300 ms chacune). |
+| `core/detectors.ts` | 21 détecteurs | Faible | Chacun suit les règles 1 à 5 ; 20 entrées adverses de 50 000 caractères testées (< 300 ms chacune). |
 | `core/token-format.ts` | `BRACKETED_SOURCE`, `BARE_SCAN` | Faible | Nom borné à 32 caractères (paresseux), chiffres bornés à 6, espaces bornés à 3, lookbehind/lookahead en bordure. 8 entrées adverses testées. |
 | `core/restore.ts` | combinaison des deux ci-dessus | Faible | Un seul passage ; valeurs insérées par callback, jamais relues. 6 entrées adverses + 5 000 jetons testés. |
 | `core/pseudonymize.ts` | `TOKEN_FORMAT` | Nul | Ancrée, bornée, appliquée à des entrées de session déjà limitées. |

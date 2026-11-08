@@ -39,6 +39,8 @@ export class AppModel {
   /** Valeurs que l'utilisateur a choisi de ne pas masquer (faux positifs). */
   private ignored = new Set<string>();
   session = new TokenSession();
+  /** Nom affiché dans les jetons, par catégorie interne (ex. TEL → PHONE en anglais). */
+  categoryMap: Record<string, string> = {};
 
   /** Texte réellement analysé : c'est lui, et lui seul, qui est nettoyé. */
   analyzedText: string | null = null;
@@ -48,6 +50,10 @@ export class AppModel {
   constructor(settings: Settings = DEFAULT_SETTINGS, directory: DirectoryEntry[] = []) {
     this.settings = { enabled: { ...settings.enabled }, internalDomains: [...settings.internalDomains] };
     this.directory = [...directory];
+  }
+
+  display(category: string): string {
+    return this.categoryMap[category] ?? category;
   }
 
   // --- Détection -------------------------------------------------------------
@@ -123,7 +129,9 @@ export class AppModel {
   /** Remplace les valeurs masquées de l'analyse par leurs jetons. */
   validate(): CleanResult | null {
     if (this.analyzedText === null) return null;
-    const masked = this.review().filter((r) => r.masked).map((r) => r.match);
+    const masked = this.review()
+      .filter((r) => r.masked)
+      .map((r) => ({ ...r.match, category: this.display(r.match.category) }));
     this.lastClean = this.session.clean(this.analyzedText, masked);
     return this.lastClean;
   }

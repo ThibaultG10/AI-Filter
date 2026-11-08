@@ -81,3 +81,12 @@
   1. Écart au cadrage (jalon 3) : un terme d'annuaire entièrement contenu dans une donnée détectée plus longue cède la place à la donnée. À valider.
   2. Annuaire et réglages en localStorage **en clair** : acceptable, ou faut-il tout chiffrer par phrase de passe (au prix d'une saisie à chaque ouverture) ?
   3. Cible (usage personnel, équipe, produit), extension Chrome V2, langues autres que le français, modèle économique, nom du produit.
+
+## Jalon 8 — Anglais et formats US/UK
+
+- **i18n** : `src/config/texts.ts` contient `FR` (référence) et `EN` ; le type `Texts` impose les mêmes clés. Langue : choix mémorisé, sinon langue du navigateur (français si elle commence par « fr », anglais sinon). Changer de langue remonte l'interface en conservant le modèle (session, analyse) et les champs.
+- **Catégories de jetons par langue** : les catégories internes restent en français (stables pour l'annuaire et les données déjà exportées) ; seul le nom affiché dans le jeton change (`TEL` → `PHONE`, `PERSONNE` → `PERSON`…), appliqué au moment de la validation. La restauration accepte les jetons des deux langues, car elle s'appuie sur la table de la session. Limite : changer de langue en cours de session peut créer un second jeton pour une même valeur dans une catégorie renommée.
+- **Tous les détecteurs restent actifs dans les deux langues** : un utilisateur français traite aussi des données américaines, et inversement.
+- **Nouveaux détecteurs** : `ssn` (séparateurs obligatoires, règles de zone/groupe/série), `nino` (lettres de préfixe valides, suffixe A-D, majuscules uniquement), `phone-us` (plan NANP ; « 1 » nu exigeant un séparateur, pour ne pas lire « 1234 555 2671 » comme un numéro), `phone-uk` (formats nationaux 07…, 02x, 011x/01x1, 01xxx, 03/08 ; les formats +44 restent couverts par `phone-intl`). Non faits : EIN, passeport, codes postaux (faux positifs élevés pour une valeur sensible faible).
+- **Faux jetons Slack dans les tests** : construits par concaténation à l'exécution, car la protection des dépôts GitHub bloque tout littéral ayant la forme d'un jeton.
+- **Documentation** : `README.md` en anglais (référence sur GitHub), `README.fr.md`, `docs/USER-GUIDE.md` et `docs/GUIDE-UTILISATEUR.md`.

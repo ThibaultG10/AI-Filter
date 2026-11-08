@@ -1,10 +1,15 @@
-// Textes de l'interface isolés ici pour préparer l'i18n.
-export const BANNER_TEXT =
-  "Traitement 100 % local. Réduction du risque, pas de garantie absolue : relisez avant d'envoyer.";
+// Textes de l'interface, par langue. Le français est la référence : l'anglais doit avoir les mêmes clés
+// (le type `Texts` le garantit à la compilation).
+
+export type Lang = 'fr' | 'en';
+export const LANGS: readonly Lang[] = ['fr', 'en'];
 
 const plural = (n: number, one: string, many: string): string => (n > 1 ? many : one);
 
-export const TEXTS = {
+export const FR = {
+  lang: 'Langue',
+  banner:
+    "Traitement 100 % local. Réduction du risque, pas de garantie absolue : relisez avant d'envoyer.",
   title: '🛡️ Filtre IA',
   step1: '1. Votre texte',
   step2: '2. Vérification',
@@ -76,4 +81,153 @@ export const TEXTS = {
   wipe: 'Tout effacer',
   wiped: 'Réglages, annuaire et sessions effacés.',
   footer: 'Aucune donnée ne quitte cette page. Le résultat reste une aide : vérifiez toujours le texte avant de l\'envoyer.',
+  /** Catégorie interne → nom affiché dans les jetons (identité en français). */
+  categories: {} as Record<string, string>,
+  defaultCategories: ['CLIENT', 'PERSONNE', 'PROJET', 'SERVEUR', 'INTERNE'],
+  detectorLabels: {
+    pem: 'Clés privées (PEM)',
+    jwt: 'Jetons JWT',
+    'api-key-sk': 'Clés API (préfixe sk-)',
+    'api-key-aws': "Clés d'accès AWS",
+    'api-key-github': 'Jetons GitHub',
+    'api-key-slack': 'Jetons Slack',
+    email: 'E-mails',
+    iban: 'IBAN',
+    nir: 'N° de sécurité sociale (FR)',
+    siret: 'SIRET',
+    siren: 'SIREN',
+    card: 'Cartes bancaires',
+    'phone-fr': 'Téléphones français',
+    'phone-intl': 'Téléphones internationaux',
+    'phone-us': 'Téléphones US/Canada',
+    'phone-uk': 'Téléphones britanniques',
+    ssn: 'N° de sécurité sociale (US)',
+    nino: 'National Insurance (UK)',
+    ipv4: 'Adresses IPv4',
+    ipv6: 'Adresses IPv6',
+    'internal-url': 'URL et hôtes internes',
+  } as Record<string, string>,
 };
+
+export type Texts = typeof FR;
+
+export const EN: Texts = {
+  lang: 'Language',
+  banner: '100% local processing. Risk reduction, not an absolute guarantee: review the text before sending.',
+  title: '🛡️ AI Filter',
+  step1: '1. Your text',
+  step2: '2. Review',
+  step3: '3. AI reply',
+  inputLabel: 'Text to send to the AI',
+  analyze: 'Analyze',
+  emptyInput: 'Paste some text first.',
+  staleAnalysis: 'The text changed since the analysis: click “Analyze” again.',
+  categoryLabel: 'Category',
+  permanent: 'Add to directory',
+  maskSelection: 'Mask selection',
+  maskHint: 'Select a word in the text, then “Mask selection”: all its occurrences will be masked.',
+  noSelection: 'Select a word or passage in the text first.',
+  maskedOk: (s: string) => `“${s}” will be masked everywhere it appears.`,
+  previewLabel: 'Analyzed text: masked items are buttons',
+  reviewHint: 'Click an item to stop masking it (false positive); click again to mask it.',
+  counter: (masked: number, kept: number) =>
+    `${masked} ${plural(masked, 'item masked', 'items masked')}` + (kept > 0 ? ` · ${kept} left as is` : ''),
+  markMasked: (v: string, c: string) => `Masked: ${v} (${c}). Activate to stop masking it.`,
+  markUnmasked: (v: string, c: string) => `Not masked: ${v} (${c}). Activate to mask it.`,
+  validate: 'Confirm and mask',
+  cleanedLabel: 'Cleaned text, to send to the AI',
+  validated: (n: number) => `${n} ${plural(n, 'item replaced', 'items replaced')}. Review before sending.`,
+  copy: 'Copy',
+  copied: 'Copied.',
+  copyFailed: 'Copy failed: select the text and copy it manually.',
+  replyLabel: 'AI reply (with tokens)',
+  restore: 'Restore',
+  restoredLabel: 'Restored reply',
+  noSessionTokens: 'No tokens in this session: confirm a text in step 2 first.',
+  restoredCount: (n: number) => `${n} ${plural(n, 'token restored', 'tokens restored')}.`,
+  unknownTokens: (l: string[]) => `Unknown tokens left as is (invented by the AI?): ${l.join(', ')}.`,
+  missingTokens: (l: string[]) => `Tokens missing from the reply: ${l.join(', ')}.`,
+  settings: 'Detection settings',
+  detectors: 'Active detectors',
+  domainsLabel: 'Internal domains to mask (one per line)',
+  directory: 'Forbidden terms directory',
+  directoryWarning:
+    'The directory is stored in clear text in this browser. On a shared computer, use “Erase everything” when you are done.',
+  termLabel: 'Term',
+  aliasesLabel: 'Variants (separated by |)',
+  add: 'Add',
+  entryAdded: 'Term added.',
+  remove: 'Remove',
+  removeEntry: (t: string) => `Remove “${t}” from the directory`,
+  moreEntries: (n: number) => `… and ${n} more entries (not shown).`,
+  exportJson: 'Export as JSON',
+  exportCsv: 'Export as CSV',
+  importLabel: 'Import a file (JSON or CSV)',
+  importSummary: (added: number, skipped: number, errors: number) =>
+    `${added} added, ${skipped} already present, ${errors} line(s) with errors.`,
+  session: 'Session and storage',
+  sessionCount: (n: number) => `${n} ${plural(n, 'token', 'tokens')} in the current session (in memory only).`,
+  sessionHint:
+    'To keep your tokens after closing the page, save the session: it is encrypted (AES-GCM) with your passphrase, which is never stored.',
+  passphraseLabel: 'Passphrase',
+  passphraseTooShort: (n: number) => `The passphrase must be at least ${n} characters long.`,
+  sessionSave: 'Save encrypted session',
+  sessionLoad: 'Load session',
+  sessionDelete: 'Delete saved session',
+  sessionNew: 'New session',
+  sessionSaved: 'Session saved (encrypted).',
+  sessionLoaded: 'Session loaded.',
+  sessionDeleted: 'Saved session deleted.',
+  sessionCleared: 'Session tokens cleared.',
+  noSavedSession: 'No saved session.',
+  storageUnavailable: 'Browser storage unavailable.',
+  wipe: 'Erase everything',
+  wiped: 'Settings, directory and sessions erased.',
+  footer: 'No data leaves this page. The result is only an aid: always check the text before sending it.',
+  categories: {
+    CLE_API: 'API_KEY',
+    CARTE: 'CARD',
+    TEL: 'PHONE',
+    URL_INTERNE: 'INTERNAL_URL',
+    PERSONNE: 'PERSON',
+    PROJET: 'PROJECT',
+    SERVEUR: 'SERVER',
+    INTERNE: 'INTERNAL',
+  },
+  defaultCategories: ['CLIENT', 'PERSON', 'PROJECT', 'SERVER', 'INTERNAL'],
+  detectorLabels: {
+    pem: 'Private keys (PEM)',
+    jwt: 'JWT tokens',
+    'api-key-sk': 'API keys (sk- prefix)',
+    'api-key-aws': 'AWS access keys',
+    'api-key-github': 'GitHub tokens',
+    'api-key-slack': 'Slack tokens',
+    email: 'Email addresses',
+    iban: 'IBAN',
+    nir: 'French social security number',
+    siret: 'SIRET (FR company ID)',
+    siren: 'SIREN (FR company ID)',
+    card: 'Bank cards',
+    'phone-fr': 'French phone numbers',
+    'phone-intl': 'International phone numbers',
+    'phone-us': 'US/Canada phone numbers',
+    'phone-uk': 'UK phone numbers',
+    ssn: 'US Social Security number',
+    nino: 'UK National Insurance number',
+    ipv4: 'IPv4 addresses',
+    ipv6: 'IPv6 addresses',
+    'internal-url': 'Internal URLs and hosts',
+  },
+};
+
+export const TEXTS_BY_LANG: Record<Lang, Texts> = { fr: FR, en: EN };
+
+export function getTexts(lang: Lang): Texts {
+  return TEXTS_BY_LANG[lang];
+}
+
+/** Langue du navigateur : français si elle commence par « fr », anglais sinon. */
+export function detectLanguage(browserLanguages: readonly string[] | undefined): Lang {
+  const first = browserLanguages?.[0]?.toLowerCase() ?? '';
+  return first.startsWith('fr') ? 'fr' : 'en';
+}

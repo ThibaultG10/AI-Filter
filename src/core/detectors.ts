@@ -6,7 +6,10 @@ import {
   isValidIban,
   isValidIPv4,
   isValidIPv6,
+  isValidNanp,
+  isValidNino,
   isValidNir,
+  isValidSsn,
   isValidSiren,
   isValidSiret,
 } from './validators';
@@ -121,6 +124,23 @@ function baseDetectors(internalDomains: readonly string[]): Detector[] {
       enabled: true,
     },
     {
+      id: 'ssn',
+      label: 'N° de sécurité sociale (US)',
+      category: 'SSN',
+      // Séparateurs obligatoires (tiret ou espace, identiques) : 9 chiffres nus sont trop ambigus.
+      pattern: /(?<![\d-])\d{3}([- ])\d{2}\1\d{4}(?![\d-])/g,
+      validate: isValidSsn,
+      enabled: true,
+    },
+    {
+      id: 'nino',
+      label: 'National Insurance (UK)',
+      category: 'NINO',
+      pattern: /(?<![A-Za-z0-9])[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z](?: ?\d{2}){3} ?[A-D](?![A-Za-z0-9])/g,
+      validate: isValidNino,
+      enabled: true,
+    },
+    {
       id: 'siret',
       label: 'SIRET',
       category: 'SIRET',
@@ -149,6 +169,22 @@ function baseDetectors(internalDomains: readonly string[]): Detector[] {
       label: 'Téléphones français',
       category: 'TEL',
       pattern: /(?<![\d+])(?:(?:\+33|0033)[ .-]?(?:\(0\))?[1-9]|0[1-9])(?:[ .-]?\d{2}){4}(?!\d)/g,
+      enabled: true,
+    },
+    {
+      id: 'phone-us',
+      label: 'Téléphones US/Canada',
+      category: 'TEL',
+      pattern: /(?<![\w+-])(?:\+1[ .-]?|1[ .-])?(?:\(\d{3}\)[ .-]?|\d{3}[ .-])\d{3}[ .-]\d{4}(?![\d-])/g,
+      validate: isValidNanp,
+      enabled: true,
+    },
+    {
+      id: 'phone-uk',
+      label: 'Téléphones britanniques',
+      category: 'TEL',
+      pattern:
+        /(?<![\w+.-])0(?:7\d{3} ?\d{6}|2\d ?\d{4} ?\d{4}|1(?:1\d|\d1) ?\d{3} ?\d{4}|1\d{3} ?\d{5,6}|[38]\d{2} ?\d{3} ?\d{4})(?!\d)/g,
       enabled: true,
     },
     {

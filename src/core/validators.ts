@@ -135,3 +135,40 @@ export function isPlausibleInternationalPhone(value: string): boolean {
   const n = value.replace(/\D/g, '').length;
   return n >= 8 && n <= 15;
 }
+
+/**
+ * Numéro de sécurité sociale américain (SSN) au format 123-45-6789 : la zone ne peut pas être
+ * 000, 666 ni 900-999 ; le groupe ne peut pas être 00 ; la série ne peut pas être 0000.
+ */
+export function isValidSsn(value: string): boolean {
+  const m = /^(\d{3})[- ](\d{2})[- ](\d{4})$/.exec(value);
+  if (!m) return false;
+  const area = Number(m[1]);
+  return area !== 0 && area !== 666 && area < 900 && m[2] !== '00' && m[3] !== '0000';
+}
+
+const NINO_INVALID_PREFIXES = new Set(['BG', 'GB', 'NK', 'KN', 'TN', 'NT', 'ZZ']);
+
+/**
+ * National Insurance number britannique : 2 lettres, 6 chiffres, suffixe A-D.
+ * Première lettre hors D F I Q U V ; deuxième hors D F I O Q U V ; préfixes BG GB NK KN TN NT ZZ exclus.
+ */
+export function isValidNino(value: string): boolean {
+  const s = value.replace(/ /g, '');
+  if (!/^[A-Z]{2}\d{6}[A-D]$/.test(s)) return false;
+  const first = s.charAt(0);
+  const second = s.charAt(1);
+  if ('DFIQUV'.includes(first) || 'DFIOQUV'.includes(second)) return false;
+  return !NINO_INVALID_PREFIXES.has(s.slice(0, 2));
+}
+
+/**
+ * Numéro nord-américain (NANP) : 10 chiffres, indicatif régional et code de central
+ * commençant par 2-9, précédés ou non du « 1 » international.
+ */
+export function isValidNanp(value: string): boolean {
+  let d = value.replace(/\D/g, '');
+  if (d.length === 11 && d.startsWith('1')) d = d.slice(1);
+  if (d.length !== 10) return false;
+  return /[2-9]/.test(d.charAt(0)) && /[2-9]/.test(d.charAt(3));
+}

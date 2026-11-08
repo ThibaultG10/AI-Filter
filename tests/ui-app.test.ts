@@ -24,7 +24,7 @@ const flush = () => new Promise((r) => setTimeout(r, 20));
 let store: ReturnType<typeof memoryStore>;
 function start() {
   document.body.innerHTML = '<div id="app"></div>';
-  return mount($('app'), { storage: new Storage(store), iterations: 1_000 });
+  return mount($('app'), { storage: new Storage(store), iterations: 1_000, lang: 'fr' });
 }
 
 beforeEach(() => {

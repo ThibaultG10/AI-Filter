@@ -116,6 +116,17 @@ const ADVERSARIAL: ReadonlyArray<readonly [string, string]> = [
   ['tirets', '-'.repeat(SIZE)],
   ['SIREN répétés', '732 829 320 '.repeat(4_000)],
   ['numéros FR répétés', '06 12 34 56 78 '.repeat(3_300)],
+  ['SSN répétés', '123-45-6789 '.repeat(4_200)],
+  ['tirets et chiffres', '123-'.repeat(12_500)],
+  ['parenthèses', '('.repeat(SIZE)],
+  ['indicatifs US', '(415) 555-'.repeat(5_000)],
+  ['numéros US répétés', '415-555-2671 '.repeat(3_800)],
+  ['NINO répétés', 'AB 12 34 56 C '.repeat(3_500)],
+  ['paires de lettres', 'AB'.repeat(SIZE / 2)],
+  ['lettres et chiffres', 'AB 12 '.repeat(8_300)],
+  ['numéros UK répétés', '07911 123456 '.repeat(3_800)],
+  ['zéros UK espacés', '0 '.repeat(SIZE / 2)],
+  ['préfixes UK', '020 '.repeat(12_500)],
 ];
 
 describe('robustesse (pas de ReDoS) sur 50 000 caractères', () => {

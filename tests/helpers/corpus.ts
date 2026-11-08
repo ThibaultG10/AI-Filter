@@ -21,6 +21,10 @@ const IBANS = ['FR76 3000 6000 0112 3456 7890 189', 'DE89 3704 0044 0532 0130 00
 const CARDS = ['4111 1111 1111 1111', '5555 5555 5555 4444'];
 const NIRS = ['2 69 05 49 588 157 80', '1 85 05 78 006 084 91'];
 const SIRETS = ['73282932000017', '443 061 841 00021'];
+const SSNS = ['123-45-6789', '219-09-9999', '457-55-5462'];
+const NINOS = ['AB 12 34 56 C', 'JG103377A', 'CE 98 76 54 D'];
+const US_PHONES = ['(415) 555-2671', '+1 212 555 0100', '202-555-0143'];
+const UK_PHONES = ['07911 123456', '020 7946 0958', '0121 496 0000'];
 const KEYS = ['sk-abcdefghijklmnopqrstuvwxyz123456', 'AKIAIOSFODNN7EXAMPLE', 'ghp_abcdefghijklmnopqrstuvwxyz0123456789'];
 
 const FILLERS = [
@@ -92,6 +96,8 @@ export function buildCorpus(count = 100, seed = 42, withLookalikes = true): Corp
       () => `Sécu ${use(pick(NIRS))}`,
       () => `SIRET ${use(pick(SIRETS))}`,
       () => `Clé : ${use(pick(KEYS))}`,
+      () => `SSN ${use(pick(SSNS))}, NI ${use(pick(NINOS))}`,
+      () => `US ${use(pick(US_PHONES))} / UK ${use(pick(UK_PHONES))}`,
       () => `${use(pick(PROJECTS))} suivi par ${use(pick(PERSONS))} chez ${use(pick(CLIENTS))}`,
       () => (withLookalikes ? pick(TOKEN_LOOKALIKES) : pick(FILLERS)),
     ];

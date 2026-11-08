@@ -236,3 +236,18 @@ footer {
     flex: 1 1 auto;
   }
 }
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+select {
+  font: inherit;
+  min-height: 44px;
+  color: var(--tx);
+  background: var(--card);
+  border: 1px solid var(--ctl);
+  border-radius: 8px;
+  padding: 4px 8px;
+}

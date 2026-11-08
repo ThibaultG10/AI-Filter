@@ -21,7 +21,7 @@ const check = (ok: boolean, label: string): void => {
 
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
 try {
-  const context = await browser.newContext({ viewport: { width: 420, height: 900 }, acceptDownloads: true });
+  const context = await browser.newContext({ viewport: { width: 420, height: 900 }, acceptDownloads: true, locale: 'fr-FR' });
   const requests: string[] = [];
   const problems: string[] = [];
   await context.route('**/*', (route) => {
@@ -79,6 +79,21 @@ try {
   const external = requests.filter((u) => !u.startsWith('file://') && !u.startsWith('data:') && !u.startsWith('blob:'));
   check(external.length === 0, `aucune requête réseau (${requests.length} requêtes locales)`);
   check(problems.length === 0, `aucune erreur console ni violation CSP${problems.length ? ' : ' + problems.join(' | ') : ''}`);
+
+  // Langue du navigateur anglaise : interface et jetons en anglais.
+  const en = await browser.newContext({ locale: 'en-US' });
+  const enPage = await en.newPage();
+  await enPage.goto(pathToFileURL(file).href);
+  check((await enPage.textContent('#analyze')) === 'Analyze', 'interface en anglais avec un navigateur anglais');
+  await enPage.fill('#input', 'Call 415-555-2671 or 07911 123456, SSN 123-45-6789, NI AB123456C');
+  await enPage.click('#analyze');
+  await enPage.click('#validate');
+  check(
+    (await enPage.inputValue('#cleaned')) === 'Call [PHONE_1] or [PHONE_2], SSN [SSN_1], NI [NINO_1]',
+    'détecteurs US/UK et jetons anglais',
+  );
+  await enPage.selectOption('#lang', 'fr');
+  check((await enPage.textContent('#analyze')) === 'Analyser', 'changement de langue à chaud');
 } finally {
   await browser.close();
 }

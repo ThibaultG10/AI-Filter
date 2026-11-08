@@ -5,7 +5,10 @@ import {
   isValidIban,
   isValidIPv4,
   isValidIPv6,
+  isValidNanp,
+  isValidNino,
   isValidNir,
+  isValidSsn,
   isValidSiren,
   isValidSiret,
   luhn,
@@ -185,4 +188,27 @@ describe('isPlausibleInternationalPhone', () => {
     expect(isPlausibleInternationalPhone('+1234567')).toBe(false);
     expect(isPlausibleInternationalPhone('+1234567890123456')).toBe(false);
   });
+});
+
+describe('isValidSsn', () => {
+  it.each(['123-45-6789', '001-01-0001', '899-99-9999', '123 45 6789'])('accepte %s', (v) => expect(isValidSsn(v)).toBe(true));
+  it.each(['000-12-3456', '666-12-3456', '900-12-3456', '123-00-4567', '123-45-0000', '123456789', '12-345-6789', ''])(
+    'refuse « %s »',
+    (v) => expect(isValidSsn(v)).toBe(false),
+  );
+});
+
+describe('isValidNino', () => {
+  it.each(['AB123456C', 'AB 12 34 56 C', 'OA123456A', 'ZX123456D'])('accepte %s', (v) => expect(isValidNino(v)).toBe(true));
+  it.each(['DA123456C', 'AO123456C', 'BG123456C', 'ZZ123456C', 'AB123456E', 'AB12345C', 'ab123456c', ''])(
+    'refuse « %s »',
+    (v) => expect(isValidNino(v)).toBe(false),
+  );
+});
+
+describe('isValidNanp', () => {
+  it.each(['415-555-2671', '(212) 555-0100', '+1 415 555 2671', '1-800-555-0199'])('accepte %s', (v) => expect(isValidNanp(v)).toBe(true));
+  it.each(['123-456-7890', '415-155-2671', '055-555-2671', '415-555-267', '+2 415 555 2671', ''])('refuse « %s »', (v) =>
+    expect(isValidNanp(v)).toBe(false),
+  );
 });
